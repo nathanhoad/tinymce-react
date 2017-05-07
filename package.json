@@ -1,6 +1,6 @@
 {
   "name": "tinymce-react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A TinyMCE React component",
   "main": "lib/index.js",
   "scripts": {
@@ -16,6 +16,12 @@
   "bugs": {
     "url": "https://github.com/nathanhoad/tinymce-react/issues"
   },
+  "keywords": [
+    "react",
+    "tinymce",
+    "wysiwyg",
+    "editor"
+  ],
   "author": "Nathan Hoad",
   "license": "MIT",
   "devDependencies": {
