@@ -11,8 +11,6 @@ class TinyMCE extends React.Component {
         
         this.id = props.id || uuid();
         
-        this.has_requested_script = !!(typeof window !== "undefined" && window.tinymce);
-        
         this.state = {
             editor: null
         };
@@ -22,20 +20,18 @@ class TinyMCE extends React.Component {
     componentDidMount () {
         if (typeof window === "undefined" || typeof document === "undefined") return;
         
-        if (window.tinymce) {
+        if (window.tinymce || window._has_requested_tinymce) {
             this.initialiseEditor();
             return;
         }
         
-        if (this.has_requested_script) return;
-
         this.script = document.createElement('script');
         this.script.type = "application/javascript";
         this.script.addEventListener('load', this.initialiseEditor);
         this.script.src = `https://cloud.tinymce.com/stable/tinymce.min.js${this.props.apiKey ? `?apiKey=${this.props.apiKey}` : ''}`;
         document.head.appendChild(this.script);
         
-        this.has_requested_script = true;
+        window._has_requested_tinymce = true;
     }
     
     
@@ -51,7 +47,9 @@ class TinyMCE extends React.Component {
     
     
     componentWillReceiveProps (next_props) {
-        if (this.state.editor && this.props.content !== next_props.content) {
+        if (!this.state.editor) {
+            this.initialiseEditor();
+        } else if (this.props.content !== next_props.content) {
             this.state.editor.setContent(next_props.content);
         }
     }
@@ -63,7 +61,17 @@ class TinyMCE extends React.Component {
     
     
     initialiseEditor () {
-        if (typeof window === "undefined" || !window.tinymce) return;
+        if (typeof window === "undefined") return;
+        
+        if (window._has_requested_tinymce && !window.tinymce && !this.state.editor) {
+            // Multiple editors on the page, one of the other ones has already requested the tinymce script
+            setTimeout(() => {
+                try {
+                    this.initialiseEditor();
+                } catch (e) {}
+            }, 500);
+            return;
+        }
         
         if (this.state.editor) {
             this.removeEditor();
@@ -117,7 +125,7 @@ class TinyMCE extends React.Component {
 TinyMCE.defaultProps = {
     id: undefined,
     content: '',
-    config: { height: 500 },
+    config: { height: 300 },
     onContentChanged: () => {}
 };
 
