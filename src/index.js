@@ -9,6 +9,8 @@ class TinyMCE extends React.Component {
         this.initialiseEditor = this.initialiseEditor.bind(this);
         this.removeEditor = this.removeEditor.bind(this);
         
+        this.id = props.id || uuid();
+        
         this.has_requested_script = !!(typeof window !== "undefined" && window.tinymce);
         
         this.state = {
@@ -70,7 +72,7 @@ class TinyMCE extends React.Component {
         const component = this;
         
         let config = this.props.config;
-        config.selector = `#${component.props.id}`;
+        config.selector = `#${component.id}`;
         config.setup = (editor) => {
             component.setState({ editor });
             
@@ -97,15 +99,15 @@ class TinyMCE extends React.Component {
     
     
     render () {
-        const { id, content, config, className } = this.props;
+        const { content, config, className } = this.props;
         
         if (config.inline) {
             return (
-                <div id={id} className={className} dangerouslySetInnerHTML={{ __html: content }} />
+                <div id={this.id} className={className} dangerouslySetInnerHTML={{ __html: content }} />
             );
         } else {
             return (
-                <textarea id={id} style={{ visibility: 'hidden' }} defaultValue={content} />
+                <textarea id={this.id} style={{ visibility: 'hidden' }} defaultValue={content} />
             );
         }
     }
@@ -113,7 +115,7 @@ class TinyMCE extends React.Component {
 
 
 TinyMCE.defaultProps = {
-    id: uuid(),
+    id: undefined,
     content: '',
     config: { height: 500 },
     onContentChanged: () => {}
