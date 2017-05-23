@@ -97,11 +97,17 @@ class TinyMCE extends React.Component {
     
     
     render () {
-        const { id } = this.props;
+        const { id, content, config, className } = this.props;
         
-        return (
-            <textarea id={id} style={{ visibility: 'hidden' }} defaultValue={this.props.content} />
-        )
+        if (config.inline) {
+            return (
+                <div id={id} className={className} dangerouslySetInnerHTML={{ __html: content }} />
+            );
+        } else {
+            return (
+                <textarea id={id} style={{ visibility: 'hidden' }} defaultValue={content} />
+            );
+        }
     }
 }
 
