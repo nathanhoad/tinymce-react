@@ -88,6 +88,7 @@ class TinyMCE extends React.Component {
 TinyMCE.defaultProps = {
     id: uuid(),
     content: '',
+    config: { height: 500 },
     onContentChanged: () => {}
 };
 
