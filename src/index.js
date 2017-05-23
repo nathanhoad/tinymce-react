@@ -9,11 +9,7 @@ class TinyMCE extends React.Component {
         this.initialiseEditor = this.initialiseEditor.bind(this);
         this.removeEditor = this.removeEditor.bind(this);
         
-        if (typeof document !== "undefined" && typeof document.createElement === "function") {  
-            this.script = document.createElement('script');
-            this.script.type = "application/javascript";
-            this.script.addEventListener('load', this.initialiseEditor);
-        }
+        this.has_requested_script = !!(typeof window !== "undefined" && window.tinymce);
         
         this.state = {
             editor: null
@@ -23,14 +19,21 @@ class TinyMCE extends React.Component {
     
     componentDidMount () {
         if (typeof window === "undefined" || typeof document === "undefined") return;
-        if (window.tinymce) return;
-        if (this.has_loaded_script) return;
         
-        let script_url = `https://cloud.tinymce.com/stable/tinymce.min.js${this.props.apiKey ? `?apiKey=${this.props.apiKey}` : ''}`;
-        this.script.src = script_url;
+        if (window.tinymce) {
+            this.initialiseEditor();
+            return;
+        }
+        
+        if (this.has_requested_script) return;
+
+        this.script = document.createElement('script');
+        this.script.type = "application/javascript";
+        this.script.addEventListener('load', this.initialiseEditor);
+        this.script.src = `https://cloud.tinymce.com/stable/tinymce.min.js${this.props.apiKey ? `?apiKey=${this.props.apiKey}` : ''}`;
         document.head.appendChild(this.script);
         
-        this.has_loaded_script = true;
+        this.has_requested_script = true;
     }
     
     
@@ -38,10 +41,28 @@ class TinyMCE extends React.Component {
         if (typeof this.script !== "undefined") {
             this.script.removeEventListener('load', this.initialiseEditor);
         }
+        
+        if (this.state.editor) {
+            this.removeEditor();
+        }
+    }
+    
+    
+    componentWillReceiveProps (next_props) {
+        if (this.state.editor && this.props.content !== next_props.content) {
+            this.state.editor.setContent(next_props.content);
+        }
+    }
+    
+    
+    shouldComponentUpdate () {
+        return false;
     }
     
     
     initialiseEditor () {
+        if (typeof window === "undefined" || !window.tinymce) return;
+        
         if (this.state.editor) {
             this.removeEditor();
         }
